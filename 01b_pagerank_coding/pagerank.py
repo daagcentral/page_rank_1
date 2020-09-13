@@ -101,7 +101,9 @@ class WebGraph():
 
         else:
             v = torch.zeros(n)
-            # FIXME: your code goes here
+            for i in range(0, n):
+                if url_satisfies_query(self._index_to_url(i), query):
+                    v[i] = 1
 
         v_sum = torch.sum(v)
         assert(v_sum > 0)
@@ -130,13 +132,24 @@ class WebGraph():
                 x0 = torch.unsqueeze(x0, 1)
             x0 /= torch.norm(x0)
 
-            # main loop
-            # FIXME: your code goes here
+            a = torch.zeros(n)
+            for i in range(0, n):
+                row = self.P[i]
+                if all(entry == 0 for entry in row):
+                    a[i] = 1
 
             x = x0.squeeze()
-            while torch.matrix_power(x, k) - torch.matrix_power(x, k-1) <= epsilon:
-                print(x)
-                break
+            k = 0
+
+            # main loop
+            while k < max_iterations:
+                xNew = (self.P.t() @ (alpha*x).t()).t() + \
+                    (((a.t() @ (alpha*x).t()).t() + (1-alpha)) * v.t())
+                if torch.norm(xNew-x) <= epsilon:
+                    x = xNew
+                    break
+                x = xNew
+                k += 1
 
             return x
 
