@@ -11,7 +11,13 @@ import gzip
 import csv
 
 import logging
+import gensim.downloader
 
+#model = 'word2vec-google-news-300'         # this one is trained on the most data
+#model = 'fasttext-wiki-news-subwords-300'  # fasttext can create vectors for out of vocabulary words
+#model = 'glove-twitter-25'                 # the smallest model, fits into memory easily
+model = 'glove-wiki-gigaword-300'           # this is a reasonable compromise of size/accuracy
+vectors = gensim.downloader.load(model)
 
 class WebGraph():
 
@@ -201,6 +207,12 @@ def url_satisfies_query(url, query):
     '''
     satisfies = False
     terms = query.split()
+    
+    words_lst_tpl = vectors.most_similar(query)[:5] #A list of tuples with all the ~similar words to the query word
+
+    for i in words_lst_tpl:
+        word = i[0]
+        terms.append(word)
 
     num_terms = 0
     for term in terms:
